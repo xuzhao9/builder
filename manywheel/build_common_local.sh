@@ -149,7 +149,7 @@ echo "Calling setup.py bdist at $(date)"
 time CMAKE_ARGS=${CMAKE_ARGS[@]} \
      EXTRA_CAFFE2_CMAKE_FLAGS=${EXTRA_CAFFE2_CMAKE_FLAGS[@]} \
      BUILD_LIBTORCH_CPU_WITH_DEBUG=$BUILD_DEBUG_INFO \
-     python setup.py bdist_wheel -d /tmp/$WHEELHOUSE_DIR
+     python setup.py bdist_wheel -d $WHEELHOUSE_DIR
 echo "Finished setup.py bdist at $(date)"
 
 # Build libtorch packages
@@ -177,7 +177,7 @@ if [[ -n "$BUILD_PYTHONLESS" ]]; then
     # for now, the headers for the libtorch package will just be copied in
     # from one of the wheels (this is from when this script built multiple
     # wheels at once)
-    ANY_WHEEL=$(ls /tmp/$WHEELHOUSE_DIR/torch*.whl | head -n1)
+    ANY_WHEEL=$(ls $WHEELHOUSE_DIR/torch*.whl | head -n1)
     unzip -d any_wheel $ANY_WHEEL
     if [[ -d any_wheel/torch/include ]]; then
         cp -r any_wheel/torch/include libtorch/
@@ -190,7 +190,7 @@ if [[ -n "$BUILD_PYTHONLESS" ]]; then
     echo $PYTORCH_BUILD_VERSION > libtorch/build-version
     echo "$(pushd $PYTORCH_ROOT && git rev-parse HEAD)" > libtorch/build-hash
 
-    mkdir -p /tmp/$LIBTORCH_HOUSE_DIR
+    mkdir -p $LIBTORCH_HOUSE_DIR
 
     if [[ "$DESIRED_DEVTOOLSET" == *"cxx11-abi"* ]]; then
         LIBTORCH_ABI="cxx11-abi-"
@@ -198,12 +198,16 @@ if [[ -n "$BUILD_PYTHONLESS" ]]; then
         LIBTORCH_ABI=
     fi
 
-    zip -rq /tmp/$LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-$PYTORCH_BUILD_VERSION.zip libtorch
-    cp /tmp/$LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-$PYTORCH_BUILD_VERSION.zip \
-       /tmp/$LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-latest.zip
+    zip -rq $LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-$PYTORCH_BUILD_VERSION.zip libtorch
+    cp $LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-$PYTORCH_BUILD_VERSION.zip \
+       $LIBTORCH_HOUSE_DIR/libtorch-$LIBTORCH_ABI$LIBTORCH_VARIANT-latest.zip
 fi
 
 popd
+
+# Finished building the wheel
+echo "Finished building the wheel, location: $WHEELHOUSE_DIR"
+exit 0
 
 #######################################################################
 # ADD DEPENDENCIES INTO THE WHEEL
